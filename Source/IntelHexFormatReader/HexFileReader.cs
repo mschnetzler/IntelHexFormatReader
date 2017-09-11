@@ -11,6 +11,8 @@ namespace IntelHexFormatReader
         private IEnumerable<string> hexRecordLines;
         private int memorySize;
 
+        public int MemoryStart { get; set; } = 0;
+
         #region Constructors
 
         public HexFileReader(string fileName, int memorySize)
@@ -42,10 +44,10 @@ namespace IntelHexFormatReader
         /// <returns>A MemoryBlock representation of the HEX file.</returns>
         public MemoryBlock Parse()
         {
-            return ReadHexFile(hexRecordLines, memorySize);
+            return ReadHexFile(hexRecordLines, MemoryStart, memorySize);
         }
 
-        private static MemoryBlock ReadHexFile(IEnumerable<string> hexRecordLines, int memorySize)
+        private static MemoryBlock ReadHexFile(IEnumerable<string> hexRecordLines, int memoryStart, int memorySize)
         {
             var result = new MemoryBlock(memorySize);
 
@@ -58,7 +60,7 @@ namespace IntelHexFormatReader
                 {
                     case RecordType.Data:
                         {
-                            var nextAddress = hexRecord.Address + baseAddress;
+                            var nextAddress = hexRecord.Address + baseAddress - memoryStart;
                             for (var i = 0; i < hexRecord.ByteCount; i++)
                             {
                                 if (nextAddress + i > memorySize)
